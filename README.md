@@ -26,7 +26,16 @@ DWYU was written to support a C project. It has therefore not been extensively t
 ## Dependencies
 
 DWYU has a number of dependencies. These dependencies are described in [Dockerfile](Dockerfile). Building a Docker image
-using this Dockerfile is the easiest way to experiment with DWYU.
+using this Dockerfile and running a bash session within it is the easiest way to create an environment and experiment with DWYU:
+
+```
+$ git clone https://github.com/apbramah/declare-what-you-use.git
+$ cd declare-what-you-use
+declare-what-you-use$ docker build -t dwyu:latest .
+declare-what-you-use$ docker run --rm -it dwyu:latest bash
+```
+
+The last command launches a bash session in which the instructions below may be trialed.
 
 ## Installing DWYU
 
