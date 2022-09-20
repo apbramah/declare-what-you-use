@@ -48,3 +48,4 @@ llvm_map_components_to_libnames(llvm_libs x86asmparser support option profiledat
 target_link_libraries(dwyu PRIVATE LLVM)
 
 install(TARGETS dwyu DESTINATION bin)
+install(PROGRAMS scripts/dwyu.sh DESTINATION bin)
