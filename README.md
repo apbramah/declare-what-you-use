@@ -23,9 +23,18 @@ in style and documentation.
 
 DWYU was written to support a C project. It has therefore not been extensively tested against C++ projects (but it ought to work!)
 
+## Dependencies
+
+DWYU has a number of dependencies. These dependencies are described in [Dockerfile](Dockerfile). Building a Docker image
+using this Dockerfile is the easiest way to experiment with DWYU.
+
 ## Installing DWYU
 
+The following steps assume that you have installed the necessary dependencies.
+
 ```
+$ git clone https://github.com/apbramah/declare-what-you-use.git
+$ cd declare-what-you-use
 declare-what-you-use$ mkdir build; cd build
 declare-what-you-use/build$ cmake ..
 declare-what-you-use/build$ make install
