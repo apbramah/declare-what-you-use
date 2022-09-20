@@ -11,7 +11,7 @@ message(STATUS "Using CLANGConfig.cmake in: ${CLANG_DIR}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(dwyu main.cpp)
+add_executable(dwyu src/main.cpp)
 
 target_link_directories(dwyu PRIVATE ${LLVM_LIBRARY_DIRS})
 target_compile_definitions(dwyu PRIVATE ${LLVM_DEFINITIONS})

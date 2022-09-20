@@ -11,6 +11,7 @@
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/Signals.h"
 
+#include <iostream>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -27,13 +28,6 @@ std::set<std::pair<std::string, std::string>> DeclPairs;
 
 class FunctionDeclMatchHandler : public MatchFinder::MatchCallback {
  public:
-  void finalize(const SourceManager& SM) {
-    std::unique_lock<std::mutex> LockGuard(Mutex);
-
-    // Do anything needed on a per-TU basis here. I can't think of anything
-    // at the moment...
-  }
-
   void run(const MatchFinder::MatchResult& Result) override {
     std::unique_lock<std::mutex> LockGuard(Mutex);
 
@@ -42,31 +36,18 @@ class FunctionDeclMatchHandler : public MatchFinder::MatchCallback {
       if (Result.SourceManager->isInSystemHeader(Begin))
         return;
 
-      // Check the declaration was made inside code we own
-
-      namespace fs = std::filesystem;
-
-      fs::path folderPath = "/home/aml";
-
-      if (is_symlink(folderPath)) {
-        folderPath = fs::read_symlink(folderPath);
-      }
-
-      if (Begin.printToString(*Result.SourceManager).find(folderPath) == -1)
+      if (F->getLocation().isInvalid())
         return;
 
-      // I cant for the life of me to get insert to only check the first of a pair, so instead
-      // have a set of just the name and only if something is added to that, add it to the pair list
+      std::string id       = F->getDeclKindName() + std::string(": ") + F->getNameAsString();
+      std::string location = F->getLocation().printToString(*Result.SourceManager);
 
-      const SourceLocation& lcn = F->getLocation();
       if (F->isThisDeclarationReferenced()) {
-        if (Refs.insert(F->getDeclKindName() + std::string(": ") + F->getNameAsString()).second == true)
-          RefPairs.insert(std::make_pair(F->getDeclKindName() + std::string(": ") + F->getNameAsString(),
-                                         lcn.printToString(*Result.SourceManager)));
+        if (Refs.insert(id).second == true)
+          RefPairs.insert(std::make_pair(id, location));
       } else {
-        if (Decls.insert(F->getDeclKindName() + std::string(": ") + F->getNameAsString()).second == true)
-          DeclPairs.insert(std::make_pair(F->getDeclKindName() + std::string(": ") + F->getNameAsString(),
-                                          lcn.printToString(*Result.SourceManager)));
+        if (Decls.insert(id).second == true)
+          DeclPairs.insert(std::make_pair(id, location));
       }
     }
   }
@@ -76,10 +57,7 @@ class DWYUASTConsumer : public ASTConsumer {
  public:
   DWYUASTConsumer() { Matcher.addMatcher(namedDecl().bind("namedDecl"), &Handler); }
 
-  void HandleTranslationUnit(ASTContext& Context) override {
-    Matcher.matchAST(Context);
-    Handler.finalize(Context.getSourceManager());
-  }
+  void HandleTranslationUnit(ASTContext& Context) override { Matcher.matchAST(Context); }
 
  private:
   FunctionDeclMatchHandler Handler;
@@ -129,10 +107,7 @@ int main(int argc, const char** argv) {
   std::set_difference(DeclPairs.begin(), DeclPairs.end(), RefPairs.begin(), RefPairs.end(),
                       std::back_inserter(declaredButNotDefined), compareFirst);
 
-  uint32_t numErrors = 0;
-
   for (auto F : declaredButNotDefined) {
-    llvm::errs() << F.first << "\t" << F.second << "\n";
-    numErrors++;
+    std::cout << F.first << "\t" << F.second << "\n";
   }
 }
