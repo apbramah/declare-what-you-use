@@ -90,7 +90,7 @@ int main(int argc, const char** argv) {
 
   tooling::ExecutorName.setInitialValue("all-TUs");
 
-  auto Executor = clang::tooling::createExecutorFromCommandLineArgs(argc, argv, llvm::cl::GeneralCategory, Overview);
+  auto Executor = clang::tooling::createExecutorFromCommandLineArgs(argc, argv, llvm::cl::getGeneralCategory(), Overview);
 
   if (!Executor) {
     llvm::errs() << llvm::toString(Executor.takeError()) << "\n";
